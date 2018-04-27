@@ -154,6 +154,7 @@ export const createComment = (comment) =>
         },
         body: JSON.stringify({
             ...comment,
+            id: Helpers.guid,
             timestamp: Helpers.getJSONDate
         })
     }).then(res => res.json())
