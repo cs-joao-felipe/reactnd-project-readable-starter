@@ -1,52 +1,51 @@
-import React, { Component } from 'react';
+import React, { Component } from 'react'
 import { Route } from 'react-router-dom'
 import * as Api from './utils/api'
+import Posts from './components/posts'
+import './App.css'
 
 class App extends Component {
 
   state = {
-    posts: []
+    posts: new Map()
   }
 
+  upVote = (id) => {
+    let post = this.state.posts.get(id)
+    post.voteScore += 1
+    this.setState((previousState) => ({
+      posts: previousState.posts.set(id, post)
+    }))
+    Api.upVotePostById(id);
+  }
+
+  downVote = (id) => {
+    let post = this.state.posts.get(id)
+    post.voteScore -= 1
+    this.setState((previousState) => ({
+      posts: previousState.posts.set(id, post)
+    }))
+    Api.downVotePostById(id);
+  }
+  
   componentDidMount() {
     Api.getAllPosts().then((posts) => {
-      this.setState({ posts })
+      var mapPosts = new Map()
+      posts.map(post => mapPosts.set(post.id, post))
+
+      this.setState({ posts: mapPosts })
     })
   }
-
 
   render() {
     const { posts } = this.state
     return (
-
       < div className="App" >
-        <Route exact path="/" render={
-          () => (
-            <div>
-              <table className="books-grid">
-                <thead>
-                  <td>Title</td>
-                  <td>Author</td>
-                  <td>Up Votes</td>
-                  <td>Date</td>
-                </thead>
-                <tbody>
-                  {posts.length > 0 && posts.map((post) =>
-                    <tr>
-                      <td>{post.title}</td>
-                      <td>{post.author}</td>
-                      <td>{post.voteScore}</td>
-                      <td>{post.timestamp}</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )
-        } />
+        <Route exact path="/" render={() => (
+          <Posts posts={Array.from(posts.values())} upVote={this.upVote} downVote={this.downVote} />
+        )} />
       </div >
-    );
+    )
   }
 }
-
-export default App;
+export default App
